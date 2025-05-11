@@ -6,3 +6,4 @@ export { TrainingDataService } from './services/training-data.service';
 export { OrganisationsService } from './services/organisations.service';
 export { ConversationsService } from './services/conversations.service';
 export { ChatBotsService } from './services/chat-bots.service';
+export { StatisticsService } from './services/statistics.service';

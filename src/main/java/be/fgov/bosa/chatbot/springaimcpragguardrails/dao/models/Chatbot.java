@@ -5,7 +5,9 @@ import be.fgov.bosa.chatbot.springaimcpragguardrails.enums.ChatbotStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
@@ -46,9 +48,6 @@ public class Chatbot extends CustomAuditable<String> {
     private double confidenceThreshold = 0.65; // Bot-specific threshold
     @Column(length = 10000)
     private String responseTemplate; // Optional response formatting template
-
-    @ElementCollection
-    private Map<String, String> metadataFilters = new HashMap<>(); // For advanced filtering
 
     @Column(nullable = false)
     private boolean strictGuardrails = true; // Enable/disable strict guardrails

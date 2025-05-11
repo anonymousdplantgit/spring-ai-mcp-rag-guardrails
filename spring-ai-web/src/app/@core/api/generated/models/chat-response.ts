@@ -4,7 +4,7 @@
 
 export interface ChatResponse {
   confidence?: number;
+  conversationId?: string;
   response?: string;
   retrievalConfidence?: number;
-  sessionId?: string;
 }

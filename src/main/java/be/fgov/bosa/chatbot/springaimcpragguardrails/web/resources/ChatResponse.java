@@ -5,13 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ChatResponse {
     private String response;
-    private String sessionId;
+    private UUID conversationId;
     private double confidence;
     private double retrievalConfidence;
 }

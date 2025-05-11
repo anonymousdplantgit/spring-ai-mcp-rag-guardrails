@@ -36,7 +36,7 @@ import { Drawer } from 'primeng/drawer';
 import { Popover } from 'primeng/popover';
 
 @Component({
-    selector: 'app-requests',
+    selector: 'app-bots',
     standalone: true,
     imports: [
         CommonModule,

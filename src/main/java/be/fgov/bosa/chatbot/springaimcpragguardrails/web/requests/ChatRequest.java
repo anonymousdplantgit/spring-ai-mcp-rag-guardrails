@@ -2,6 +2,8 @@ package be.fgov.bosa.chatbot.springaimcpragguardrails.web.requests;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -9,6 +11,6 @@ import lombok.*;
 @Setter
 public class ChatRequest {
     private String message;
-    private String conversationId;
-    private String botId;
+    private UUID conversationId;
+    private UUID botId;
 }

@@ -12,21 +12,42 @@ import { ApiConfiguration } from '../api-configuration';
 import { StrictHttpResponse } from '../strict-http-response';
 
 import { ConversationResource } from '../models/conversation-resource';
+import { ConversationSummary } from '../models/conversation-summary';
 import { deleteConversation } from '../fn/conversations/delete-conversation';
 import { DeleteConversation$Params } from '../fn/conversations/delete-conversation';
+import { deleteConversationMessages } from '../fn/conversations/delete-conversation-messages';
+import { DeleteConversationMessages$Params } from '../fn/conversations/delete-conversation-messages';
+import { getBotConversations } from '../fn/conversations/get-bot-conversations';
+import { GetBotConversations$Params } from '../fn/conversations/get-bot-conversations';
+import { getBotConversationStats } from '../fn/conversations/get-bot-conversation-stats';
+import { GetBotConversationStats$Params } from '../fn/conversations/get-bot-conversation-stats';
 import { getConversation } from '../fn/conversations/get-conversation';
 import { GetConversation$Params } from '../fn/conversations/get-conversation';
+import { getConversationMessages } from '../fn/conversations/get-conversation-messages';
+import { GetConversationMessages$Params } from '../fn/conversations/get-conversation-messages';
+import { getConversationMessagesPage } from '../fn/conversations/get-conversation-messages-page';
+import { GetConversationMessagesPage$Params } from '../fn/conversations/get-conversation-messages-page';
 import { getConversations } from '../fn/conversations/get-conversations';
 import { GetConversations$Params } from '../fn/conversations/get-conversations';
+import { getConversationsByDateRange } from '../fn/conversations/get-conversations-by-date-range';
+import { GetConversationsByDateRange$Params } from '../fn/conversations/get-conversations-by-date-range';
+import { getConversationSummary1 } from '../fn/conversations/get-conversation-summary-1';
+import { GetConversationSummary1$Params } from '../fn/conversations/get-conversation-summary-1';
+import { getMessagesByExternalId } from '../fn/conversations/get-messages-by-external-id';
+import { GetMessagesByExternalId$Params } from '../fn/conversations/get-messages-by-external-id';
+import { MessageResource } from '../models/message-resource';
 import { PageConversationResource } from '../models/page-conversation-resource';
+import { PageMessageResource } from '../models/page-message-resource';
 import { saveConversation } from '../fn/conversations/save-conversation';
 import { SaveConversation$Params } from '../fn/conversations/save-conversation';
 import { searchConversations } from '../fn/conversations/search-conversations';
 import { SearchConversations$Params } from '../fn/conversations/search-conversations';
+import { searchMessages } from '../fn/conversations/search-messages';
+import { SearchMessages$Params } from '../fn/conversations/search-messages';
 
 
 /**
- * Manage conversations in the system
+ * Manage conversations and messages in the system
  */
 @Injectable({ providedIn: 'root' })
 export class ConversationsService extends BaseService {
@@ -38,6 +59,10 @@ export class ConversationsService extends BaseService {
   static readonly GetConversationsPath = '/api/conversations';
 
   /**
+   * Get conversations.
+   *
+   * Retrieve conversations with pagination and filtering
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getConversations()` instead.
    *
@@ -48,6 +73,10 @@ export class ConversationsService extends BaseService {
   }
 
   /**
+   * Get conversations.
+   *
+   * Retrieve conversations with pagination and filtering
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getConversations$Response()` instead.
    *
@@ -63,6 +92,10 @@ export class ConversationsService extends BaseService {
   static readonly SaveConversationPath = '/api/conversations';
 
   /**
+   * Save conversation.
+   *
+   * Create or update a conversation
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `saveConversation()` instead.
    *
@@ -73,6 +106,10 @@ export class ConversationsService extends BaseService {
   }
 
   /**
+   * Save conversation.
+   *
+   * Create or update a conversation
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `saveConversation$Response()` instead.
    *
@@ -88,6 +125,10 @@ export class ConversationsService extends BaseService {
   static readonly GetConversationPath = '/api/conversations/{id}';
 
   /**
+   * Get conversation.
+   *
+   * Retrieve a specific conversation by ID
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `getConversation()` instead.
    *
@@ -98,6 +139,10 @@ export class ConversationsService extends BaseService {
   }
 
   /**
+   * Get conversation.
+   *
+   * Retrieve a specific conversation by ID
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `getConversation$Response()` instead.
    *
@@ -113,6 +158,10 @@ export class ConversationsService extends BaseService {
   static readonly DeleteConversationPath = '/api/conversations/{id}';
 
   /**
+   * Delete conversation.
+   *
+   * Delete a conversation and all its messages
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `deleteConversation()` instead.
    *
@@ -123,6 +172,10 @@ export class ConversationsService extends BaseService {
   }
 
   /**
+   * Delete conversation.
+   *
+   * Delete a conversation and all its messages
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `deleteConversation$Response()` instead.
    *
@@ -134,10 +187,113 @@ export class ConversationsService extends BaseService {
     );
   }
 
+  /** Path part for operation `getConversationMessages()` */
+  static readonly GetConversationMessagesPath = '/api/conversations/{conversationId}/messages';
+
+  /**
+   * Get conversation messages.
+   *
+   * Retrieve all messages for a specific conversation
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getConversationMessages()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationMessages$Response(params: GetConversationMessages$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<MessageResource>>> {
+    return getConversationMessages(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get conversation messages.
+   *
+   * Retrieve all messages for a specific conversation
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getConversationMessages$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationMessages(params: GetConversationMessages$Params, context?: HttpContext): Observable<Array<MessageResource>> {
+    return this.getConversationMessages$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<MessageResource>>): Array<MessageResource> => r.body)
+    );
+  }
+
+  /** Path part for operation `deleteConversationMessages()` */
+  static readonly DeleteConversationMessagesPath = '/api/conversations/{conversationId}/messages';
+
+  /**
+   * Delete conversation messages.
+   *
+   * Delete all messages for a conversation
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `deleteConversationMessages()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteConversationMessages$Response(params: DeleteConversationMessages$Params, context?: HttpContext): Observable<StrictHttpResponse<void>> {
+    return deleteConversationMessages(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Delete conversation messages.
+   *
+   * Delete all messages for a conversation
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `deleteConversationMessages$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  deleteConversationMessages(params: DeleteConversationMessages$Params, context?: HttpContext): Observable<void> {
+    return this.deleteConversationMessages$Response(params, context).pipe(
+      map((r: StrictHttpResponse<void>): void => r.body)
+    );
+  }
+
+  /** Path part for operation `getConversationMessagesPage()` */
+  static readonly GetConversationMessagesPagePath = '/api/conversations/{conversationId}/messages/paged';
+
+  /**
+   * Get paginated messages.
+   *
+   * Retrieve messages with pagination
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getConversationMessagesPage()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationMessagesPage$Response(params: GetConversationMessagesPage$Params, context?: HttpContext): Observable<StrictHttpResponse<PageMessageResource>> {
+    return getConversationMessagesPage(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get paginated messages.
+   *
+   * Retrieve messages with pagination
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getConversationMessagesPage$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationMessagesPage(params: GetConversationMessagesPage$Params, context?: HttpContext): Observable<PageMessageResource> {
+    return this.getConversationMessagesPage$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageMessageResource>): PageMessageResource => r.body)
+    );
+  }
+
   /** Path part for operation `searchConversations()` */
   static readonly SearchConversationsPath = '/api/conversations/search';
 
   /**
+   * Search conversations.
+   *
+   * Search conversations with autocomplete functionality
+   *
    * This method provides access to the full `HttpResponse`, allowing access to response headers.
    * To access only the response body, use `searchConversations()` instead.
    *
@@ -148,6 +304,10 @@ export class ConversationsService extends BaseService {
   }
 
   /**
+   * Search conversations.
+   *
+   * Search conversations with autocomplete functionality
+   *
    * This method provides access only to the response body.
    * To access the full response (for headers, for example), `searchConversations$Response()` instead.
    *
@@ -156,6 +316,216 @@ export class ConversationsService extends BaseService {
   searchConversations(params: SearchConversations$Params, context?: HttpContext): Observable<Array<ConversationResource>> {
     return this.searchConversations$Response(params, context).pipe(
       map((r: StrictHttpResponse<Array<ConversationResource>>): Array<ConversationResource> => r.body)
+    );
+  }
+
+  /** Path part for operation `searchMessages()` */
+  static readonly SearchMessagesPath = '/api/conversations/search/messages';
+
+  /**
+   * Search messages.
+   *
+   * Search for messages containing specific text
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `searchMessages()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchMessages$Response(params: SearchMessages$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<MessageResource>>> {
+    return searchMessages(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Search messages.
+   *
+   * Search for messages containing specific text
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `searchMessages$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  searchMessages(params: SearchMessages$Params, context?: HttpContext): Observable<Array<MessageResource>> {
+    return this.searchMessages$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<MessageResource>>): Array<MessageResource> => r.body)
+    );
+  }
+
+  /** Path part for operation `getConversationsByDateRange()` */
+  static readonly GetConversationsByDateRangePath = '/api/conversations/range';
+
+  /**
+   * Get conversations by date range.
+   *
+   * Retrieve conversations within a date range
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getConversationsByDateRange()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationsByDateRange$Response(params: GetConversationsByDateRange$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<ConversationResource>>> {
+    return getConversationsByDateRange(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get conversations by date range.
+   *
+   * Retrieve conversations within a date range
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getConversationsByDateRange$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationsByDateRange(params: GetConversationsByDateRange$Params, context?: HttpContext): Observable<Array<ConversationResource>> {
+    return this.getConversationsByDateRange$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<ConversationResource>>): Array<ConversationResource> => r.body)
+    );
+  }
+
+  /** Path part for operation `getConversationSummary1()` */
+  static readonly GetConversationSummary1Path = '/api/conversations/external/{conversationId}/summary';
+
+  /**
+   * Get conversation summary.
+   *
+   * Get conversation statistics and summary
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getConversationSummary1()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationSummary1$Response(params: GetConversationSummary1$Params, context?: HttpContext): Observable<StrictHttpResponse<ConversationSummary>> {
+    return getConversationSummary1(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get conversation summary.
+   *
+   * Get conversation statistics and summary
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getConversationSummary1$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getConversationSummary1(params: GetConversationSummary1$Params, context?: HttpContext): Observable<ConversationSummary> {
+    return this.getConversationSummary1$Response(params, context).pipe(
+      map((r: StrictHttpResponse<ConversationSummary>): ConversationSummary => r.body)
+    );
+  }
+
+  /** Path part for operation `getMessagesByExternalId()` */
+  static readonly GetMessagesByExternalIdPath = '/api/conversations/external/{conversationId}/messages';
+
+  /**
+   * Get messages by external ID.
+   *
+   * Retrieve messages using external conversation ID
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getMessagesByExternalId()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getMessagesByExternalId$Response(params: GetMessagesByExternalId$Params, context?: HttpContext): Observable<StrictHttpResponse<Array<MessageResource>>> {
+    return getMessagesByExternalId(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get messages by external ID.
+   *
+   * Retrieve messages using external conversation ID
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getMessagesByExternalId$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getMessagesByExternalId(params: GetMessagesByExternalId$Params, context?: HttpContext): Observable<Array<MessageResource>> {
+    return this.getMessagesByExternalId$Response(params, context).pipe(
+      map((r: StrictHttpResponse<Array<MessageResource>>): Array<MessageResource> => r.body)
+    );
+  }
+
+  /** Path part for operation `getBotConversationStats()` */
+  static readonly GetBotConversationStatsPath = '/api/conversations/bot/{botId}/stats';
+
+  /**
+   * Get bot conversation stats.
+   *
+   * Get conversation statistics for a bot
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getBotConversationStats()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getBotConversationStats$Response(params: GetBotConversationStats$Params, context?: HttpContext): Observable<StrictHttpResponse<{
+[key: string]: {
+};
+}>> {
+    return getBotConversationStats(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get bot conversation stats.
+   *
+   * Get conversation statistics for a bot
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getBotConversationStats$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getBotConversationStats(params: GetBotConversationStats$Params, context?: HttpContext): Observable<{
+[key: string]: {
+};
+}> {
+    return this.getBotConversationStats$Response(params, context).pipe(
+      map((r: StrictHttpResponse<{
+[key: string]: {
+};
+}>): {
+[key: string]: {
+};
+} => r.body)
+    );
+  }
+
+  /** Path part for operation `getBotConversations()` */
+  static readonly GetBotConversationsPath = '/api/conversations/bot/{botId}/conversations';
+
+  /**
+   * Get bot conversations.
+   *
+   * Get all conversations for a specific bot
+   *
+   * This method provides access to the full `HttpResponse`, allowing access to response headers.
+   * To access only the response body, use `getBotConversations()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getBotConversations$Response(params: GetBotConversations$Params, context?: HttpContext): Observable<StrictHttpResponse<PageConversationResource>> {
+    return getBotConversations(this.http, this.rootUrl, params, context);
+  }
+
+  /**
+   * Get bot conversations.
+   *
+   * Get all conversations for a specific bot
+   *
+   * This method provides access only to the response body.
+   * To access the full response (for headers, for example), `getBotConversations$Response()` instead.
+   *
+   * This method doesn't expect any request body.
+   */
+  getBotConversations(params: GetBotConversations$Params, context?: HttpContext): Observable<PageConversationResource> {
+    return this.getBotConversations$Response(params, context).pipe(
+      map((r: StrictHttpResponse<PageConversationResource>): PageConversationResource => r.body)
     );
   }
 

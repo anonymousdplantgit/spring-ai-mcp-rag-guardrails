@@ -10,6 +10,7 @@ import { TrainingDataService } from './services/training-data.service';
 import { OrganisationsService } from './services/organisations.service';
 import { ConversationsService } from './services/conversations.service';
 import { ChatBotsService } from './services/chat-bots.service';
+import { StatisticsService } from './services/statistics.service';
 
 /**
  * Module that provides all services and configuration.
@@ -23,6 +24,7 @@ import { ChatBotsService } from './services/chat-bots.service';
     OrganisationsService,
     ConversationsService,
     ChatBotsService,
+    StatisticsService,
     ApiConfiguration
   ],
 })
