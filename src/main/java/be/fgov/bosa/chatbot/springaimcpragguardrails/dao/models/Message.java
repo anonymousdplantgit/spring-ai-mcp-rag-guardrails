@@ -3,9 +3,7 @@ package be.fgov.bosa.chatbot.springaimcpragguardrails.dao.models;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.dao.models.commons.CustomAuditable;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.enums.MessageTypeEnum;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -16,6 +14,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Message extends CustomAuditable<String> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,8 +23,8 @@ public class Message extends CustomAuditable<String> {
     
     @ManyToOne(fetch = FetchType.LAZY)
     private Conversation conversation;
-    
-    @Column(nullable = false)
+
+    @Column(nullable = false,length = 3000)
     private String content;
     
     @Column(nullable = false)
@@ -32,7 +32,11 @@ public class Message extends CustomAuditable<String> {
     
     @Enumerated(EnumType.STRING)
     private MessageTypeEnum type;
-    
+    private Double confidence;
+    private Long processingTimeMs;
+    private Integer inputTokens;
+    private Integer outputTokens;
+
     @ManyToMany
     @JoinTable(
         name = "message_resources",

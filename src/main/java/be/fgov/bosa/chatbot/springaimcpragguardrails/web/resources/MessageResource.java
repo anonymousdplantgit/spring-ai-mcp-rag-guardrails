@@ -13,14 +13,13 @@ import java.util.UUID;
 @Setter
 public class MessageResource {
     private UUID id;
-    
     private ConversationResource conversation;
-    
     private String content;
-    
     private OffsetDateTime timestamp;
-    
     private MessageTypeEnum type;
-
+    private Double confidence;
+    private Long processingTimeMs;
+    private Integer inputTokens;
+    private Integer outputTokens;
 }
 

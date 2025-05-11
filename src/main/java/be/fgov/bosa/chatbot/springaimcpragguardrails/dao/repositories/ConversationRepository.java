@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
     @Query("SELECT c FROM Conversation c " +
-            "WHERE (:value IS NULL OR lower(c.conversationId) LIKE lower(concat('%', cast(:value as string), '%')))")
+            "WHERE (:value IS NULL OR lower(c.chatbot.name) LIKE lower(concat('%', cast(:value as string), '%')))")
     Page<Conversation> autocomplete(String value, Pageable pageable);
 
     @Query("SELECT c FROM Conversation c " +
-            "WHERE (:value IS NULL OR lower(c.conversationId) LIKE lower(concat('%', cast(:value as string), '%')))")
+            "WHERE (:value IS NULL OR lower(c.chatbot.name) LIKE lower(concat('%', cast(:value as string), '%')))")
     Page<Conversation> findItems(String value, Pageable pageable);
 }

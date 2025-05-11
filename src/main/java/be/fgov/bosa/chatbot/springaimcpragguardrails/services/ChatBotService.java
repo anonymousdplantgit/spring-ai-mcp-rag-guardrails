@@ -4,11 +4,13 @@ import be.fgov.bosa.chatbot.springaimcpragguardrails.advisors.LinksAppendingAdvi
 import be.fgov.bosa.chatbot.springaimcpragguardrails.advisors.QueryLinksAugmenter;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.dao.models.Chatbot;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.dao.repositories.ChatbotRepository;
+import be.fgov.bosa.chatbot.springaimcpragguardrails.enums.ChatbotStatusEnum;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.mappers.ChatBotMapper;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.web.requests.ChatRequest;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.web.requests.LazyLoadingEventRequest;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.web.resources.ChatResponse;
 import be.fgov.bosa.chatbot.springaimcpragguardrails.web.resources.ChatbotResource;
+import be.fgov.bosa.chatbot.springaimcpragguardrails.web.resources.MessageResource;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -47,12 +49,31 @@ public class ChatBotService {
     private final ChatBotMapper mapper;
     private final ChatClient ragChatClient;
     private final RagService ragService;
+    private final MessageService messageService;
     private final ChatMemory ragCallingChatMemory;
     private final VectorStore vectorStore;
     public ChatResponse queryLLM(ChatRequest request) {
-        Chatbot cb = repository.findById(UUID.fromString(request.getBotId())).orElseThrow(() -> new IllegalArgumentException("Chatbot not found"));
+        long startTime = System.currentTimeMillis();
+
+        // Validate bot exists and is active
+        UUID botUuid = request.getBotId();
+        Chatbot chatbot = repository.findById(botUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Chatbot not found with id: " + request.getBotId()));
+
+        if (chatbot.getStatus() == ChatbotStatusEnum.ARCHIVED) {
+            throw new IllegalStateException("Cannot chat with archived bot: " + chatbot.getName());
+        }
+
+        // Save user message with bot context
+        MessageResource userMessage = messageService.saveUserMessage(
+                request.getConversationId(),
+                request.getMessage(),
+                botUuid
+        );
+
+        UUID conversationId = userMessage.getConversation().getId();
         // Create a filter expression to match botId from the request
-        Filter.Expression botIdFilter = new FilterExpressionBuilder().eq("botId", request.getBotId()).build();
+        Filter.Expression botIdFilter = new FilterExpressionBuilder().eq("botId", request.getBotId().toString()).build();
         DocumentRetriever documentRetriever = VectorStoreDocumentRetriever.builder()
                 .vectorStore(vectorStore)
                 .similarityThreshold(0.7)
@@ -72,22 +93,34 @@ public class ChatBotService {
                 .advisors(
                         retrievalAugmentationAdvisor,
                         linksAppendingAdvisor,
-                        new MessageChatMemoryAdvisor(ragCallingChatMemory, request.getConversationId(), 10)
+                        new MessageChatMemoryAdvisor(ragCallingChatMemory, conversationId.toString(), 10)
                 )
                 .options(ChatOptions.builder()
-                        .temperature(cb.getTemperature())
+                        .temperature(chatbot.getTemperature())
                         .topK(5)
                         .build());
         // Conditionally add system prompt if not null
-        if (cb.getSystemPromptTemplate() != null && !cb.getSystemPromptTemplate().isEmpty()) {
-            promptBuilder = promptBuilder.system(cb.getSystemPromptTemplate());
+        if (chatbot.getSystemPromptTemplate() != null && !chatbot.getSystemPromptTemplate().isEmpty()) {
+            promptBuilder = promptBuilder.system(chatbot.getSystemPromptTemplate());
         }
         // Complete the builder and get the response
         String response = promptBuilder
                 .user(request.getMessage())
                 .call()
                 .content();
-        return ChatResponse.builder().response(response).build();
+        // Calculate processing time
+        long processingTime = System.currentTimeMillis() - startTime;
+        // Save bot response message with all metadata and bot context
+        MessageResource botMessage = messageService.saveBotMessage(
+                request.getConversationId(),
+                response,
+                0,
+                0,
+                0.0,
+                processingTime,
+                botUuid
+        );
+        return ChatResponse.builder().response(response).conversationId(conversationId).build();
     }
 
     public ChatbotResource save(ChatbotResource request) {

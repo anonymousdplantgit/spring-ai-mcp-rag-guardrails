@@ -8,7 +8,6 @@ import { Button } from 'primeng/button';
 import { Divider } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { UploadKbComponent } from './upload-kb.component';
-import { v4 as uuidv4 } from 'uuid';
 import { OverlayBadge } from 'primeng/overlaybadge';
 import { ChatbotResource } from '../../@core/api/generated/models/chatbot-resource';
 import { ChatBotsService } from '../../@core/api/generated/services/chat-bots.service';
@@ -107,7 +106,6 @@ export class ChatComponent implements OnInit, AfterViewChecked {
     ) {}
 
     ngOnInit() {
-        this.conversationId = uuidv4();
         this.loadBots()
     }
 
@@ -150,7 +148,7 @@ export class ChatComponent implements OnInit, AfterViewChecked {
                 })
             );
             console.log(chatResponse);
-            // Add bot response
+            this.conversationId = chatResponse.conversationId
             if (chatResponse) {
                 this.messages.push({
                     text: chatResponse.response!,
